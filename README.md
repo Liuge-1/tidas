@@ -2,8 +2,9 @@
 基于 SpringBoot4.0 + MyBatis + Redis + WebSocket 的员工培训管理后台系统
 
 ## 在线访问地址
-前台页面：http://tidas.pengdev.online
-后台管理页面：http://www.tidas.pengdev.online
+http://tidas.pengdev.online
+
+http://www.tidas.pengdev.online
 
 ## 技术栈
 - 后端：Spring Boot 4.0、MyBatis、MyBatis-Plus、JWT、Redis、WebSocket
