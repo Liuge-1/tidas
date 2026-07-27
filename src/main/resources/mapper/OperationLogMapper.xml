@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.tidaswebmanagement.mapper.OperationLogMapper">
+
+    <select id="listWithFilter" resultType="org.example.tidaswebmanagement.pojo.OperationLog">
+        SELECT * FROM operation_log
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="startTime != null and startTime.trim() != ''">
+                AND create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime.trim() != ''">
+                AND create_time &lt;= #{endTime}
+            </if>
+            <if test="result != null and result.trim() != ''">
+                AND result = #{result}
+            </if>
+            <if test="operation != null and operation.trim() != ''">
+                AND operation LIKE CONCAT('%', #{operation}, '%')
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countWithFilter" resultType="long">
+        SELECT COUNT(*) FROM operation_log
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="startTime != null and startTime.trim() != ''">
+                AND create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime.trim() != ''">
+                AND create_time &lt;= #{endTime}
+            </if>
+            <if test="result != null and result.trim() != ''">
+                AND result = #{result}
+            </if>
+            <if test="operation != null and operation.trim() != ''">
+                AND operation LIKE CONCAT('%', #{operation}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="listAllWithFilter" resultType="org.example.tidaswebmanagement.pojo.OperationLog">
+        SELECT * FROM operation_log
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="startTime != null and startTime.trim() != ''">
+                AND create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime.trim() != ''">
+                AND create_time &lt;= #{endTime}
+            </if>
+            <if test="result != null and result.trim() != ''">
+                AND result = #{result}
+            </if>
+            <if test="operation != null and operation.trim() != ''">
+                AND operation LIKE CONCAT('%', #{operation}, '%')
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>

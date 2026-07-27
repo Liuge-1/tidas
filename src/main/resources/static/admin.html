@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIDAS 培训管理系统</title>
+    <script src="https://registry.npmmirror.com/echarts/5.5.0/files/dist/echarts.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #4f6ef7;
+            --primary-dark: #3b54e0;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+            --transition: all 0.2s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            margin-left: 240px;
+            height: 56px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 32px;
+            gap: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .welcome-text { font-size: 14px; color: var(--text); font-weight: 500; }
+        .logout-btn-top {
+            background: none; border: 1px solid var(--border); padding: 6px 16px;
+            border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text-light);
+            transition: var(--transition);
+        }
+        .logout-btn-top:hover { background: #fef2f2; border-color: #ef4444; color: #ef4444; }
+
+        .sidebar {
+            position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: #fff; z-index: 100; display: flex; flex-direction: column;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+        }
+        .sidebar-header { padding: 28px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .sidebar-header .logo { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 700; }
+        .logo-icon { width: 40px; height: 40px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            border-radius: 10px; cursor: pointer; transition: var(--transition);
+            margin-bottom: 4px; color: #94a3b8; font-size: 14px; font-weight: 500;
+            border: none; background: none; width: 100%; text-align: left;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.06); color: #e2e8f0; }
+        .nav-item.active { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(79,110,247,0.4); }
+        .nav-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+        .sidebar-footer { padding: 16px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: #64748b; text-align: center; }
+
+        .main-content { margin-left: 240px; padding: 24px 32px; min-height: calc(100vh - 56px); }
+        .page-header { margin-bottom: 24px; }
+        .page-title { font-size: 26px; font-weight: 700; color: var(--text); }
+        .page-subtitle { font-size: 14px; color: var(--text-light); margin-top: 4px; }
+
+        .card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        .card-title { font-size: 16px; font-weight: 600; }
+        .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+        .search-input, .filter-select, .form-input, .form-select {
+            padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+            font-size: 14px; outline: none; transition: var(--transition);
+            background: #f8fafc; color: var(--text); min-width: 160px;
+        }
+        .search-input:focus, .filter-select:focus, .form-input:focus, .form-select:focus {
+            border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,110,247,0.1); background: #fff;
+        }
+        .search-input { min-width: 200px; }
+
+        .btn {
+            padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer;
+            font-size: 14px; font-weight: 500; transition: var(--transition);
+            display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 4px 12px rgba(79,110,247,0.35); transform: translateY(-1px); }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { box-shadow: 0 4px 12px rgba(34,197,94,0.35); transform: translateY(-1px); }
+        .btn-warning { background: var(--warning); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-outline { background: #fff; color: var(--text); border: 1.5px solid var(--border); }
+        .btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+        .btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
+
+        .table-container { overflow-x: auto; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { background: #f8fafc; padding: 14px 16px; text-align: left; font-weight: 600; color: var(--text-light); border-bottom: 2px solid var(--border); white-space: nowrap; font-size: 13px; }
+        td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+        tbody tr:hover { background: #f8fafc; }
+        .actions { display: flex; gap: 6px; }
+
+        .pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 0; flex-wrap: wrap; gap: 12px; }
+        .pagination-info { color: var(--text-light); font-size: 13px; }
+        .pagination-btns { display: flex; gap: 6px; }
+        .page-btn {
+            width: 36px; height: 36px; border: 1px solid var(--border); background: #fff;
+            border-radius: 8px; cursor: pointer; font-size: 13px; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center; color: var(--text);
+        }
+        .page-btn:hover { background: #f1f5f9; }
+        .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal { background: #fff; border-radius: 16px; width: 90%; max-width: 620px; max-height: 85vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25); animation: modalSlideIn 0.25s ease; }
+        @keyframes modalSlideIn { from { opacity: 0; transform: translateY(-30px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #fff; border-radius: 16px 16px 0 0; z-index: 1; }
+        .modal-title { font-size: 18px; font-weight: 600; }
+        .modal-close { width: 36px; height: 36px; border: none; background: #f1f5f9; border-radius: 50%; cursor: pointer; font-size: 18px; transition: var(--transition); display: flex; align-items: center; justify-content: center; color: #64748b; }
+        .modal-close:hover { background: #e2e8f0; color: #1e293b; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; background: #fff; border-radius: 0 0 16px 16px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+        .form-input, .form-select { width: 100%; }
+        .form-row { display: flex; gap: 16px; }
+        .form-row .form-group { flex: 1; }
+
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .badge-primary { background: #eef2ff; color: #4f6ef7; }
+        .badge-success { background: #ecfdf5; color: #16a34a; }
+        .badge-warning { background: #fffbeb; color: #d97706; }
+        .badge-danger { background: #fef2f2; color: #dc2626; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--card-bg); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); display: flex; align-items: center; gap: 16px; transition: var(--transition); }
+        .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+        .stat-value { font-size: 28px; font-weight: 700; }
+        .stat-label { font-size: 13px; color: var(--text-light); }
+
+        .chart-container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .chart-box { flex: 1; min-width: 300px; background: #f8fafc; border-radius: 12px; padding: 20px; text-align: center; border: 1px dashed var(--border); }
+        .chart-box h4 { margin-bottom: 12px; color: var(--text-light); font-size: 14px; }
+
+        .toast { position: fixed; top: 20px; right: 20px; z-index: 2000; padding: 14px 20px; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 500; animation: toastIn 0.3s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 400px; }
+        .toast-success { background: #22c55e; }
+        .toast-error { background: #ef4444; }
+        .toast-info { background: #4f6ef7; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 200px; }
+            .main-content { margin-left: 200px; padding: 16px; }
+            .top-bar { margin-left: 200px; }
+            .form-row { flex-direction: column; }
+            .filter-bar { flex-direction: column; }
+            .search-input { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="top-bar">
+    <span class="welcome-text" id="welcomeText">欢迎！</span>
+    <div style="display:flex;gap:10px;align-items:center;">
+        <button class="logout-btn-top" onclick="showPasswordModal()" style="background:#fef2f2;color:#ef4444;border-color:#fecaca;">🔒 修改密码</button>
+        <button class="logout-btn-top" onclick="switchToEmployee()" style="background:#eef2ff;color:#4f6ef7;border-color:#c7d2fe;">👤 切换到员工端</button>
+        <button class="logout-btn-top" onclick="handleLogout()">🚪 退出登录</button>
+    </div>
+</header>
+
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo"><div class="logo-icon">📚</div><span>TIDAS</span></div>
+    </div>
+    <nav class="sidebar-nav">
+        <button class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span> 数据看板</button>
+        <button class="nav-item" data-page="clazz"><span class="nav-icon">🏫</span> 班级管理</button>
+        <button class="nav-item" data-page="dept"><span class="nav-icon">🏢</span> 部门管理</button>
+        <button class="nav-item" data-page="emp"><span class="nav-icon">👨‍💼</span> 员工管理</button>
+        <button class="nav-item" data-page="student"><span class="nav-icon">🎓</span> 学员管理</button>
+        <button class="nav-item" data-page="resignation"><span class="nav-icon">🚪</span> 离职记录</button>
+        <button class="nav-item" data-page="operlog"><span class="nav-icon">📋</span> 操作日志</button>
+        <button class="nav-item" data-page="notice"><span class="nav-icon">📢</span> 通知公告</button>
+    </nav>
+    <div class="sidebar-footer"><div>© 2026 TIDAS v2.0</div></div>
+</aside>
+
+<main class="main-content" id="mainContent"></main>
+
+<div class="modal-overlay" id="passwordModalOverlay">
+    <div class="modal" id="passwordModalBox">
+        <div class="modal-header">
+            <h3 class="modal-title">🔒 修改密码</h3>
+            <button class="modal-close" onclick="closePasswordModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group"><label class="form-label">原密码</label><input type="password" class="form-input" id="adminOldPassword" placeholder="请输入原密码"></div>
+            <div class="form-group"><label class="form-label">新密码</label><input type="password" class="form-input" id="adminNewPassword" placeholder="请输入新密码（至少6位）"></div>
+            <div class="form-group"><label class="form-label">确认新密码</label><input type="password" class="form-input" id="adminConfirmPassword" placeholder="请再次输入新密码"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closePasswordModal()">取消</button>
+            <button class="btn btn-primary" onclick="submitPasswordChange()">确认修改</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modalBox">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">标题</h3>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+        <div class="modal-footer" id="modalFooter"></div>
+    </div>
+</div>
+
+<script>
+    // ============ Auth Check ============
+    if (!sessionStorage.getItem('token')) { location.href = 'login.html'; }
+    // 管理员端仅限 admin 角色访问
+    if (sessionStorage.getItem('role') !== 'admin') {
+        alert('权限不足：仅管理员可访问此页面，即将跳转到员工端');
+        location.href = 'employee.html';
+    }
+
+    function logout() {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('userName');
+        sessionStorage.removeItem('userId');
+        sessionStorage.removeItem('role');
+        sessionStorage.removeItem('refreshToken');
+        location.href = 'login.html';
+    }
+
+    function switchToEmployee() {
+        location.href = 'employee.html';
+    }
+
+    function handleLogout() {
+        if (confirm('确定要退出登录吗？')) {
+            logout();
+        }
+    }
+
+    function loadUserName() {
+        const name = sessionStorage.getItem('userName') || '员工';
+        const username = sessionStorage.getItem('username') || '';
+        const displayName = username ? `${name}（${username}）` : name;
+        document.getElementById('welcomeText').textContent = `欢迎！${displayName}`;
+    }
+
+    // ============ Global State ============
+    const BASE_URL = '';
+    let currentPage = 'dashboard';
+    let clazzListCache = [];
+
+    // ============ Navigation ============
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', function() {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            this.classList.add('active');
+            currentPage = this.dataset.page;
+            renderPage(currentPage);
+        });
+    });
+
+    // ============ Toast ============
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // OSS 图片缩略图：加速头像加载（非OSS的本地图片原样返回）
+    function ossThumb(url, size) {
+        if (!url) return '';
+        if (url.includes('aliyuncs.com') || url.includes('oss-')) {
+            const sep = url.includes('?') ? '&' : '?';
+            return url + sep + 'x-oss-process=image/resize,m_fill,w_' + size + ',h_' + size;
+        }
+        return url;
+    }
+
+    // ============ Modal ============
+    function openModal(title, bodyHTML, footerHTML) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalBody').innerHTML = bodyHTML;
+        document.getElementById('modalFooter').innerHTML = footerHTML || '';
+        document.getElementById('modalOverlay').classList.add('active');
+    }
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+    document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+    // ============ HTTP Helpers (with Auth) ============
+    function isAuthError(data) {
+        if (data && data.code === 0 && data.msg && (data.msg.includes('未登录') || data.msg.includes('token') || data.msg.includes('TOKEN') || data.msg.includes('权限不足'))) {
+            if (data.msg.includes('权限不足')) {
+                alert('权限不足：仅管理员可操作，即将跳转到员工端');
+                location.href = 'employee.html';
+                return true;
+            }
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('role');
+            sessionStorage.removeItem('refreshToken');
+            location.href = 'login.html';
+            return true;
+        }
+        return false;
+    }
+
+    // fetchWithAuth: 自动处理 token 过期，用 refreshToken 换新 token 后重试
+    async function fetchWithAuth(url, options = {}) {
+        const token = sessionStorage.getItem('token');
+        if (!options.headers) options.headers = {};
+        options.headers['Authorization'] = 'Bearer ' + token;
+        
+        let res = await fetch(url, options);
+        
+        if (res.status === 401 || res.status === 403) {
+            const refreshToken = sessionStorage.getItem('refreshToken');
+            if (refreshToken) {
+                const refreshRes = await fetch('/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken })
+                });
+                const refreshData = await refreshRes.json();
+                if (refreshData.code === 1 && refreshData.data) {
+                    const newToken = refreshData.data.token || refreshData.data;
+                    sessionStorage.setItem('token', newToken);
+                    options.headers['Authorization'] = 'Bearer ' + newToken;
+                    res = await fetch(url, options);
+                } else {
+                    sessionStorage.clear();
+                    location.href = 'login.html';
+                    throw new Error('Token refresh failed');
+                }
+            } else {
+                sessionStorage.clear();
+                location.href = 'login.html';
+                throw new Error('Not logged in');
+            }
+        }
+        return res;
+    }
+
+    async function apiGet(url) {
+        const res = await fetchWithAuth(BASE_URL + url);
+        const data = await res.json();
+        if (isAuthError(data)) return;
+        return data;
+    }
+
+    async function apiPost(url, body) {
+        const res = await fetchWithAuth(BASE_URL + url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (isAuthError(data)) return;
+        return data;
+    }
+
+    async function apiPut(url, body) {
+        const res = await fetchWithAuth(BASE_URL + url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (isAuthError(data)) return;
+        return data;
+    }
+
+    async function apiDelete(url) {
+        const res = await fetchWithAuth(BASE_URL + url, { method: 'DELETE' });
+        const data = await res.json();
+        if (isAuthError(data)) return;
+        return data;
+    }
+
+    // ============ Page Renderer ============
+    function renderPage(page) {
+        const container = document.getElementById('mainContent');
+        switch(page) {
+            case 'dashboard': renderDashboard(container); break;
+            case 'clazz': renderClazzPage(container); break;
+            case 'dept': renderDeptPage(container); break;
+            case 'emp': renderEmpPage(container); break;
+            case 'student': renderStudentPage(container); break;
+            case 'resignation': renderResignationPage(container); break;
+            case 'operlog': renderOperLogPage(container); break;
+            case 'notice': renderNoticePage(container); break;
+        }
+        localStorage.setItem('currentPage', page);
+    }
+
+    // ============ Dashboard ============
+    async function renderDashboard(container) {
+        container.innerHTML = `
+    <div class="page-header"><h1 class="page-title">📊 数据看板</h1><p class="page-subtitle">培训管理系统全局数据概览</p></div>
+    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        <div class="stat-card"><div class="stat-icon" style="background:#eef2ff;">👨‍💼</div><div><div class="stat-value" id="statEmp">-</div><div class="stat-label">员工总数</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#ecfdf5;">✅</div><div><div class="stat-value" id="statActive">-</div><div class="stat-label">在职员工</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fef2f2;">🚪</div><div><div class="stat-value" id="statResigned">-</div><div class="stat-label">离职员工</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#eff6ff;">🆕</div><div><div class="stat-value" id="statNewHire">-</div><div class="stat-label">本月入职</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fff7ed;">📤</div><div><div class="stat-value" id="statNewResign">-</div><div class="stat-label">本月离职</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fffbeb;">🏫</div><div><div class="stat-value" id="statClazz">-</div><div class="stat-label">班级总数</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#f5f3ff;">🎓</div><div><div class="stat-value" id="statStudent">-</div><div class="stat-label">学员总数</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:#fdf2f8;">🏢</div><div><div class="stat-value" id="statDept">-</div><div class="stat-label">部门总数</div></div></div>
+    </div>
+    <div class="chart-container">
+        <div class="chart-box"><h4>👥 员工性别分布</h4><div id="chartGender" style="width:100%;height:300px;">加载中...</div></div>
+        <div class="chart-box"><h4>💼 员工职位分布</h4><div id="chartJob" style="width:100%;height:300px;">加载中...</div></div>
+        <div class="chart-box"><h4>🎓 学员学历分布</h4><div id="chartDegree" style="width:100%;height:300px;">加载中...</div></div>
+    </div>
+    <div class="card" style="margin-top:20px;">
+        <div class="card-header"><span class="card-title">📋 最近操作日志</span></div>
+        <div class="table-container"><table><thead><tr><th>ID</th><th>操作人</th><th>操作</th><th>接口</th><th>结果</th><th>时间</th></tr></thead><tbody id="dashboardLogBody"><tr><td colspan="6" style="text-align:center;color:#94a3b8;">加载中...</td></tr></tbody></table></div>
+    </div>`;
+
+        // 加载概览数据
+        try {
+            const overviewRes = await apiGet('/report/overview');
+            // apiGet 返回的是完整的 JSON 响应 {code, msg, data}
+            if (overviewRes && overviewRes.code === 1 && overviewRes.data) {
+                const d = overviewRes.data;
+                document.getElementById('statEmp').textContent = d.totalEmps ?? 0;
+                document.getElementById('statActive').textContent = d.activeEmps ?? 0;
+                document.getElementById('statResigned').textContent = d.resignedEmps ?? 0;
+                document.getElementById('statNewHire').textContent = d.newHiresThisMonth ?? 0;
+                document.getElementById('statNewResign').textContent = d.resignationsThisMonth ?? 0;
+                document.getElementById('statClazz').textContent = d.totalClazz ?? 0;
+                document.getElementById('statStudent').textContent = d.totalStudents ?? 0;
+                document.getElementById('statDept').textContent = d.totalDepts ?? 0;
+            } else {
+                console.warn('概览数据异常:', overviewRes);
+                // 容错：如果 data 直接在顶层（有些接口可能不包装）
+                if (overviewRes && overviewRes.totalEmps !== undefined) {
+                    document.getElementById('statEmp').textContent = overviewRes.totalEmps ?? 0;
+                    document.getElementById('statActive').textContent = overviewRes.activeEmps ?? 0;
+                    document.getElementById('statResigned').textContent = overviewRes.resignedEmps ?? 0;
+                    document.getElementById('statNewHire').textContent = overviewRes.newHiresThisMonth ?? 0;
+                    document.getElementById('statNewResign').textContent = overviewRes.resignationsThisMonth ?? 0;
+                    document.getElementById('statClazz').textContent = overviewRes.totalClazz ?? 0;
+                    document.getElementById('statStudent').textContent = overviewRes.totalStudents ?? 0;
+                    document.getElementById('statDept').textContent = overviewRes.totalDepts ?? 0;
+                }
+            }
+        } catch (e) { console.error('Overview error:', e); }
+
+        // 加载最近操作日志
+        try {
+            const logRes = await apiGet('/operation-log/list?page=1&pageSize=5');
+            const rows = logRes?.data?.rows || [];
+            document.getElementById('dashboardLogBody').innerHTML = rows.length === 0
+                ? '<tr><td colspan="6" style="text-align:center;color:#94a3b8;">暂无操作记录</td></tr>'
+                : rows.map(r => `<tr>
+                    <td>${r.id}</td><td>${r.username||'-'}</td><td>${r.operation||'-'}</td>
+                    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.url||''}">${r.url||'-'}</td>
+                    <td><span class="badge ${r.result==='成功'?'badge-success':'badge-warning'}">${r.result||'-'}</span></td>
+                    <td>${r.createTime||'-'}</td>
+                </tr>`).join('');
+        } catch (e) { console.error('Log error:', e); }
+
+        // 延迟加载图表，不阻塞页面
+        setTimeout(async () => {
+            try {
+                const [genderRes, jobRes, degreeRes] = await Promise.all([
+                    apiGet('/report/getEmpGenderData'),
+                    apiGet('/report/getEmpJobData'),
+                    apiGet('/report/getStudentDegreeData')
+                ]);
+                if (genderRes?.data?.gender && genderRes?.data?.sums) {
+                    const chart = echarts.init(document.getElementById('chartGender'));
+                    chart.setOption({
+                        tooltip: { trigger: 'item' },
+                        series: [{ type: 'pie', radius: ['40%', '70%'], data: genderRes.data.gender.map((n, i) => ({ name: n, value: genderRes.data.sums[i] })), label: { formatter: '{b}: {c}人 ({d}%)' } }]
+                    });
+                }
+                if (jobRes?.data?.job && jobRes?.data?.sums) {
+                    const chart = echarts.init(document.getElementById('chartJob'));
+                    chart.setOption({
+                        tooltip: { trigger: 'axis' },
+                        xAxis: { type: 'category', data: jobRes.data.job, axisLabel: { rotate: 30 } },
+                        yAxis: { type: 'value' },
+                        series: [{ type: 'bar', data: jobRes.data.sums, itemStyle: { color: '#4f6ef7', borderRadius: [4,4,0,0] } }],
+                        grid: { bottom: 80 }
+                    });
+                }
+                if (degreeRes?.data?.degree && degreeRes?.data?.sums) {
+                    const chart = echarts.init(document.getElementById('chartDegree'));
+                    chart.setOption({
+                        tooltip: { trigger: 'item' },
+                        series: [{ type: 'pie', radius: ['40%', '70%'], data: degreeRes.data.degree.map((n, i) => ({ name: n, value: degreeRes.data.sums[i] })), label: { formatter: '{b}: {c}人 ({d}%)' } }]
+                    });
+                }
+            } catch (e) { console.error('Chart error:', e); }
+        }, 300);
+    }
+
+    // ============ 班级管理 ============
+    let clazzPage = 1, clazzPageSize = 10;
+    async function renderClazzPage(container) {
+        container.innerHTML = `
+            <div class="page-header"><h1 class="page-title">🏫 班级管理</h1><p class="page-subtitle">管理所有培训班级信息</p></div>
+            <div class="card"><div class="card-header"><span class="card-title">班级列表</span><div class="filter-bar">
+                <input type="text" class="search-input" id="clazzSearchName" placeholder="🔍 搜索班级名称...">
+                <select class="filter-select" id="clazzSearchSubject"><option value="">全部科目</option><option value="1">Java</option><option value="2">前端</option><option value="3">Python</option><option value="4">大数据</option><option value="5">UI设计</option></select>
+                <button class="btn btn-primary" onclick="searchClazz()">🔍 搜索</button>
+                <button class="btn btn-success" onclick="showClazzAddModal()">＋ 新增班级</button></div></div>
+                <div class="table-container"><table><thead><tr><th>ID</th><th>班级名称</th><th>科目</th><th>教室</th><th>班主任</th><th>开班日期</th><th>结课日期</th><th>状态</th><th>操作</th></tr></thead><tbody id="clazzTableBody"></tbody></table></div>
+                <div class="pagination" id="clazzPagination"></div></div>`;
+        await loadClazzList();
+        try { const res = await apiGet('/clazz/list'); if (res?.data) clazzListCache = res.data; } catch(e) {}
+    }
+    async function loadClazzList() {
+        const name = document.getElementById('clazzSearchName')?.value || '';
+        const subject = document.getElementById('clazzSearchSubject')?.value || '';
+        try {
+            const res = await apiGet(`/clazz?page=${clazzPage}&pagesize=${clazzPageSize}&name=${encodeURIComponent(name)}&subject=${subject || ''}`);
+            const records = res?.data?.records || [], total = res?.data?.total || 0;
+            const subjectMap = {1:'Java',2:'前端',3:'Python',4:'大数据',5:'UI设计'};
+            document.getElementById('clazzTableBody').innerHTML = records.length === 0 ? '<tr><td colspan="9" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>' : records.map(c => `
+                <tr><td>${c.id}</td><td><strong>${c.name||'-'}</strong></td><td><span class="badge badge-primary">${subjectMap[c.subject]||c.subject||'-'}</span></td><td>${c.room||'-'}</td><td>${c.masterName||'-'}</td><td>${c.beginDate||'-'}</td><td>${c.endDate||'-'}</td>
+                <td><span class="badge ${c.endDate && new Date(c.endDate) < new Date() ? 'badge-warning' : 'badge-success'}">${c.endDate && new Date(c.endDate) < new Date() ? '已结课' : '进行中'}</span></td>
+                <td class="actions"><button class="btn btn-warning btn-xs" onclick="showClazzEditModal(${c.id})">✏️编辑</button><button class="btn btn-danger btn-xs" onclick="deleteClazz(${c.id})">🗑删除</button></td></tr>`).join('');
+            renderPagination('clazzPagination', total, clazzPage, clazzPageSize, (p) => { clazzPage = p; loadClazzList(); });
+        } catch(e) { showToast('加载班级列表失败', 'error'); }
+    }
+    function searchClazz() { clazzPage = 1; loadClazzList(); }
+    async function showClazzAddModal() {
+        let empOptions = '<option value="">请选择班主任</option>';
+        try { const r = await fetch('/emps?page=1&pagesize=100',{headers:{'Authorization':'Bearer '+sessionStorage.getItem('token')}}).then(r=>r.json()); (r?.rows||[]).forEach(e=>{empOptions+=`<option value="${e.id}">${e.name||''}（${e.username||'无用户名'}）</option>`}); } catch(e){}
+        openModal('新增班级', `<div class="form-row"><div class="form-group"><label class="form-label">班级名称<span style="color:red;">*</span></label><input class="form-input" id="clazzFormName"></div></div><div class="form-row"><div class="form-group"><label class="form-label">科目</label><select class="form-select" id="clazzFormSubject"><option value="1">Java</option><option value="2">前端</option><option value="3">Python</option><option value="4">大数据</option><option value="5">UI设计</option></select></div><div class="form-group"><label class="form-label">教室</label><input class="form-input" id="clazzFormRoom"></div></div><div class="form-row"><div class="form-group"><label class="form-label">开班日期<span style="color:red;">*</span></label><input type="date" class="form-input" id="clazzFormStart" required></div><div class="form-group"><label class="form-label">结课日期</label><input type="date" class="form-input" id="clazzFormEnd"></div></div><div class="form-group"><label class="form-label">班主任</label><select class="form-select" id="clazzFormMaster">${empOptions}</select></div>`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="submitClazzAdd()">确认新增</button>`);
+    }
+    async function submitClazzAdd() {
+        const data = { name: document.getElementById('clazzFormName').value, subject: parseInt(document.getElementById('clazzFormSubject').value), room: document.getElementById('clazzFormRoom').value, beginDate: document.getElementById('clazzFormStart').value || null, endDate: document.getElementById('clazzFormEnd').value || null, masterId: document.getElementById('clazzFormMaster').value ? parseInt(document.getElementById('clazzFormMaster').value) : null };
+        if(!data.name){showToast('请输入班级名称','error');return;} if(!data.beginDate){showToast('请选择开班日期','error');return;}
+        try{await apiPost('/clazz',data);showToast('新增成功','success');closeModal();loadClazzList();}catch(e){showToast('新增失败','error');}
+    }
+    async function showClazzEditModal(id) {
+        try {
+            const res = await apiGet(`/clazz/${id}`); const c = res?.data; if(!c)return;
+            let empOptions = '<option value="">请选择班主任</option>';
+            try { const r = await fetch('/emps?page=1&pagesize=100',{headers:{'Authorization':'Bearer '+sessionStorage.getItem('token')}}).then(r=>r.json()); (r?.rows||[]).forEach(e=>{empOptions+=`<option value="${e.id}" ${c.masterId===e.id?'selected':''}>${e.name||''}（${e.username||'无用户名'}）</option>`}); } catch(e){}
+            openModal('编辑班级', `<input type="hidden" id="clazzEditId" value="${c.id}"><div class="form-row"><div class="form-group"><label class="form-label">班级名称</label><input class="form-input" id="clazzFormName" value="${c.name||''}"></div></div><div class="form-row"><div class="form-group"><label class="form-label">科目</label><select class="form-select" id="clazzFormSubject">${[1,2,3,4,5].map(s=>`<option value="${s}" ${c.subject===s?'selected':''}>${['','Java','前端','Python','大数据','UI设计'][s]}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">教室</label><input class="form-input" id="clazzFormRoom" value="${c.room||''}"></div></div><div class="form-row"><div class="form-group"><label class="form-label">开班日期</label><input type="date" class="form-input" id="clazzFormStart" value="${(c.beginDate||'').toString().substring(0,10)}"></div><div class="form-group"><label class="form-label">结课日期</label><input type="date" class="form-input" id="clazzFormEnd" value="${(c.endDate||'').toString().substring(0,10)}"></div></div><div class="form-group"><label class="form-label">班主任</label><select class="form-select" id="clazzFormMaster">${empOptions}</select></div>`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="submitClazzUpdate()">保存修改</button>`);
+        } catch(e) { showToast('获取失败','error'); }
+    }
+    async function submitClazzUpdate() {
+        const data = { id: parseInt(document.getElementById('clazzEditId').value), name: document.getElementById('clazzFormName').value, subject: parseInt(document.getElementById('clazzFormSubject').value), room: document.getElementById('clazzFormRoom').value, beginDate: document.getElementById('clazzFormStart').value || null, endDate: document.getElementById('clazzFormEnd').value || null, masterId: document.getElementById('clazzFormMaster').value ? parseInt(document.getElementById('clazzFormMaster').value) : null };
+        try{await apiPut('/clazz',data);showToast('修改成功','success');closeModal();loadClazzList();}catch(e){showToast('修改失败','error');}
+    }
+    async function deleteClazz(id) {
+        if(!confirm(`确定删除班级 ID:${id} 吗？`))return;
+        try{const res=await apiDelete(`/clazz?id=${id}`);if(res&&res.code===1)showToast('删除成功','success');else showToast(res?.msg||'删除失败','error');loadClazzList();}catch(e){showToast('删除失败','error');}
+    }
+
+    // ============ 部门管理 ============
+    async function renderDeptPage(container) {
+        container.innerHTML = `<div class="page-header"><h1 class="page-title">🏢 部门管理</h1></div><div class="card"><div class="card-header"><span class="card-title">部门列表</span><button class="btn btn-success" onclick="showDeptAddModal()">＋ 新增部门</button></div><div class="table-container"><table><thead><tr><th>ID</th><th>部门名称</th><th>操作</th></tr></thead><tbody id="deptTableBody"></tbody></table></div></div>`;
+        await loadDeptList();
+    }
+    async function loadDeptList() {
+        try {
+            const res = await apiGet('/depts'); const list = res?.data || [];
+            document.getElementById('deptTableBody').innerHTML = list.length === 0 ? '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>' : list.map(d => `<tr><td>${d.id}</td><td><strong>${d.name||'-'}</strong></td><td class="actions"><button class="btn btn-warning btn-xs" onclick="showDeptEditModal(${d.id},'${d.name||''}')">✏️编辑</button><button class="btn btn-danger btn-xs" onclick="deleteDept(${d.id})">🗑删除</button></td></tr>`).join('');
+        } catch(e) { showToast('加载失败','error'); }
+    }
+    function showDeptAddModal() { openModal('新增部门', `<div class="form-group"><label class="form-label">部门ID</label><input type="number" class="form-input" id="deptFormId"></div><div class="form-group"><label class="form-label">部门名称</label><input class="form-input" id="deptFormName"></div>`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="submitDeptAdd()">确认新增</button>`); }
+    async function submitDeptAdd() {
+        const id=document.getElementById('deptFormId').value,name=document.getElementById('deptFormName').value;
+        if(!id||!name){showToast('请填写完整','error');return;}
+        try{await fetch(`/depts?id=${id}&name=${encodeURIComponent(name)}`,{method:'POST',headers:{'Authorization':'Bearer '+sessionStorage.getItem('token')}});showToast('新增成功','success');closeModal();loadDeptList();}catch(e){showToast('新增失败','error');}
+    }
+    async function showDeptEditModal(id, name) {
+        openModal('编辑部门 - ' + name, `
+        <div class="form-group"><label class="form-label">部门名称</label><input class="form-input" id="deptEditName" value="${name}"></div>
+        <hr style="margin:16px 0;border-color:#e2e8f0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h4 style="margin:0;">👨‍💼 部门员工</h4>
+            <div style="display:flex;gap:8px;">
+                <select class="form-select" id="addEmpSelect" style="width:160px;"><option value="">选择员工</option></select>
+                <button class="btn btn-success btn-sm" onclick="addEmpToDept(${id})">＋ 添加</button>
+            </div>
+        </div>
+        <div id="deptEmpList"><p style="color:#94a3b8;">加载中...</p></div>
+    `, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="submitDeptUpdate(${id})">保存修改</button>`);
+        loadDeptEmps(id);
+        try {
+            const allRes = await apiGet('/emps?page=1&pagesize=200');
+            const allEmps = allRes?.rows || [];
+            const sel = document.getElementById('addEmpSelect');
+            allEmps.forEach(e => { sel.innerHTML += `<option value="${e.id}">${e.name||''}（${e.username||'无用户名'}） - ${e.job||''}</option>`; });
+        } catch(e) {}
+    }
+
+    async function loadDeptEmps(deptId) {
+        try {
+            const res = await apiGet(`/depts/${deptId}/employees`);
+            const list = res?.data || [];
+            document.getElementById('deptEmpList').innerHTML = list.length === 0 ? '<p style="color:#94a3b8;">暂无员工</p>' : `
+            <table><thead><tr><th>ID</th><th>姓名</th><th>性别</th><th>职位</th><th>操作</th></tr></thead><tbody>
+            ${list.map(e => `<tr><td>${e.id}</td><td><strong>${e.name||'-'}（${e.username||'无用户名'}）</strong></td><td>${e.gender||'-'}</td><td>${e.job||'-'}</td><td><button class="btn btn-danger btn-xs" onclick="removeEmpFromDept(${deptId},${e.id})">🗑 移除</button></td></tr>`).join('')}
+            </tbody></table>`;
+        } catch(e) { document.getElementById('deptEmpList').innerHTML = '<p style="color:#ef4444;">加载失败</p>'; }
+    }
+
+    async function addEmpToDept(deptId) {
+        const empId = document.getElementById('addEmpSelect').value;
+        if (!empId) { showToast('请选择员工', 'error'); return; }
+        try {
+            const token = sessionStorage.getItem('token');
+            const res = await fetch(`/depts/${deptId}/emps/${empId}`, {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            if (data.code === 1) {
+                showToast('添加成功', 'success');
+                loadDeptEmps(deptId);
+            } else {
+                showToast(data.msg || '添加失败', 'error');
+            }
+        } catch(e) { showToast('添加失败', 'error'); }
+    }
+
+    async function removeEmpFromDept(deptId, empId) {
+        if (!confirm('确定移除该员工吗？')) return;
+        try {
+            const token = sessionStorage.getItem('token');
+            const res = await fetch(`/depts/${deptId}/emps/${empId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            if (data.code === 1) {
+                showToast('移除成功', 'success');
+                loadDeptEmps(deptId);
+            } else {
+                showToast(data.msg || '移除失败', 'error');
+            }
+        } catch(e) { showToast('移除失败', 'error'); }
+    }
+
+
+
+    async function submitDeptUpdate(id) { try{await apiPut('/depts',{id,name:document.getElementById('deptEditName').value});showToast('修改成功','success');closeModal();loadDeptList();}catch(e){showToast('修改失败','error');} }
+    async function deleteDept(id) {
+        if(!confirm(`确定删除部门 ID:${id}?`)) return;
+        try {
+            const res = await apiDelete(`/depts?id=${id}`);
+            if (res && res.code === 1) {
+                showToast('删除成功', 'success');
+                loadDeptList();
+            } else {
+                showToast(res?.msg || '删除失败', 'error');
+            }
+        } catch(e) { showToast('删除失败', 'error'); }
+    }
+
+    // ============ 员工管理 ============
+    let empPage=1,empPageSize=10;
+    async function renderEmpPage(container) {
+        container.innerHTML = `<div class="page-header"><h1 class="page-title">👨‍💼 员工管理</h1></div><div class="card"><div class="card-header"><span class="card-title">员工列表</span><div class="filter-bar"><input type="text" class="search-input" id="empSearchName" placeholder="🔍搜索姓名..."><select class="filter-select" id="empSearchGender"><option value="">全部性别</option><option value="男">男</option><option value="女">女</option></select><input type="date" class="form-input" id="empSearchStart" style="min-width:140px;"><input type="date" class="form-input" id="empSearchEnd" style="min-width:140px;"><button class="btn btn-primary" onclick="searchEmp()">🔍搜索</button><button class="btn btn-success" onclick="showEmpAddModal()">＋ 新增</button></div><div style="display:flex;gap:10px;align-items:center;margin-top:8px;"><span style="font-size:13px;color:#64748b;">📊 Excel：</span><button class="btn btn-outline btn-sm" onclick="downloadEmpTemplate()">📥 下载模板</button><label class="btn btn-outline btn-sm" style="cursor:pointer;">📤 导入<input type="file" id="empExcelFile" accept=".xlsx,.xls" style="display:none;" onchange="importEmpExcel(this)"></label><button class="btn btn-outline btn-sm" onclick="showExportModal()">📋 导出</button><span id="empExcelMsg" style="font-size:12px;color:#64748b;margin-left:8px;"></span></div></div><div class="table-container"><table><thead><tr><th>头像</th><th>ID</th><th>姓名</th><th>性别</th><th>职位</th><th>入职日期</th><th>操作</th></tr></thead><tbody id="empTableBody"></tbody></table></div><div class="pagination" id="empPagination"></div></div>`;
+        await loadEmpList();
+    }
+    async function loadEmpList() {
+        const name=document.getElementById('empSearchName')?.value||'',gender=document.getElementById('empSearchGender')?.value||'',startdate=document.getElementById('empSearchStart')?.value||'',enddate=document.getElementById('empSearchEnd')?.value||'';
+        try {
+            let url=`/empsbyscan?page=${empPage}&pagesize=${empPageSize}`;
+            if(name)url+=`&name=${encodeURIComponent(name)}`; if(gender)url+=`&gender=${encodeURIComponent(gender)}`; if(startdate)url+=`&startdate=${startdate}`; if(enddate)url+=`&enddate=${enddate}`;
+            const res=await apiGet(url); const records=res?.rows||res?.records||[],total=res?.total||0;
+            document.getElementById('empTableBody').innerHTML=records.length===0?'<tr><td colspan="7" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>':records.map(e=>`<tr><td><img src="${ossThumb(e.image,72)}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'"></td><td>${e.id}</td><td><strong>${e.name||'-'}（${e.username||'无用户名'}）</strong></td><td><span class="badge ${e.gender==='男'?'badge-primary':'badge-danger'}">${e.gender||'-'}</span></td><td>${e.job||'-'}</td><td>${e.entryDate||'-'}</td><td class="actions"><button class="btn btn-warning btn-xs" onclick="showEmpEditModal(${e.id})">✏️编辑</button>${e.status!=='离职'?`<button class="btn btn-danger btn-xs" onclick="showResignModal(${e.id},'${(e.name||'').replace(/'/g,"\\'")}')">🚪离职</button>`:''}<button class="btn btn-danger btn-xs" onclick="deleteEmp(${e.id})">🗑删除</button></td></tr>`).join('');
+            renderPagination('empPagination',total,empPage,empPageSize,(p)=>{empPage=p;loadEmpList();});
+        } catch(e){showToast('加载失败','error');}
+    }
+    function searchEmp(){empPage=1;loadEmpList();}
+    function showEmpAddModal() {
+        openModal('新增员工', `<h4>基本信息</h4><div class="form-row"><div class="form-group"><label class="form-label">姓名</label><input class="form-input" id="empFormName"></div><div class="form-group"><label class="form-label">性别</label><select class="form-select" id="empFormGender"><option value="男">男</option><option value="女">女</option></select></div></div><div class="form-row"><div class="form-group"><label class="form-label">职位</label><input class="form-input" id="empFormJob"></div><div class="form-group"><label class="form-label">入职日期</label><input type="date" class="form-input" id="empFormEntry"></div></div><hr><h4>工作经历</h4><div id="empExprContainer"><div class="form-row expr-row"><div class="form-group"><label>开始日期</label><input type="date" class="form-input expr-begin"></div><div class="form-group"><label>结束日期</label><input type="date" class="form-input expr-end"></div><div class="form-group"><label>公司</label><input class="form-input expr-company"></div><div class="form-group"><label>职位</label><input class="form-input expr-job"></div></div></div><button class="btn btn-outline btn-sm" type="button" onclick="addExprRow()">＋ 添加</button>`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="submitEmpAdd()">确认新增</button>`);
+    }
+    function addExprRow(){const row=document.createElement('div');row.className='form-row expr-row';row.style.marginBottom='8px';row.innerHTML=`<div class="form-group"><label>开始日期</label><input type="date" class="form-input expr-begin"></div><div class="form-group"><label>结束日期</label><input type="date" class="form-input expr-end"></div><div class="form-group"><label>公司</label><input class="form-input expr-company"></div><div class="form-group"><label>职位</label><input class="form-input expr-job"></div>`;document.getElementById('empExprContainer').appendChild(row);}
+    function collectExprData(){const r=[];document.querySelectorAll('.expr-row').forEach(row=>{const a=row.querySelector('.expr-begin')?.value,b=row.querySelector('.expr-end')?.value,c=row.querySelector('.expr-company')?.value,d=row.querySelector('.expr-job')?.value;if(a||b||c||d)r.push({begin:a,end:b,company:c,job:d});});return r;}
+    async function submitEmpAdd(){const d={emp:{name:document.getElementById('empFormName').value,gender:document.getElementById('empFormGender').value,job:document.getElementById('empFormJob').value,entryDate:document.getElementById('empFormEntry').value},empExpr:collectExprData()};if(!d.emp.name){showToast('请输入姓名','error');return;}try{await apiPost('/emps',d);showToast('新增成功','success');closeModal();loadEmpList();}catch(e){showToast('新增失败','error');}}
+    async function showEmpEditModal(id) {
+        try {
+            const res=await apiGet(`/emps/${id}`);if(!res)return;const emp=res.emp||res,exprList=res.empExpr||[];
+            let exprHTML='';exprList.forEach(ex=>{exprHTML+=`<div class="form-row expr-row" style="margin-bottom:8px;"><div class="form-group"><label>开始日期</label><input type="date" class="form-input expr-begin" value="${ex.begin||''}"></div><div class="form-group"><label>结束日期</label><input type="date" class="form-input expr-end" value="${ex.end||''}"></div><div class="form-group"><label>公司</label><input class="form-input expr-company" value="${ex.company||''}"></div><div class="form-group"><label>职位</label><input class="form-input expr-job" value="${ex.job||''}"></div></div>`;});
+            openModal('编辑员工', `<input type="hidden" id="empEditId" value="${emp.id}"><input type="hidden" id="empEditVersion" value="${emp.version||0}"><h4>基本信息</h4><div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;"><img id="empEditAvatar" src="${ossThumb(emp.image,128)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;" onerror="this.style.display='none'"><div><input type="file" id="empAvatarFile" accept=".jpg,.jpeg,.png" style="display:none;" onchange="uploadEmpAvatar('${emp.name}')"><button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('empAvatarFile').click()">📷 上传头像</button><span id="empUploadStatus" style="font-size:12px;color:#64748b;margin-left:8px;"></span><input type="hidden" id="empFormImage" value="${emp.image||''}"></div></div><div class="form-row"><div class="form-group"><label>姓名</label><input class="form-input" id="empFormName" value="${emp.name||''}"></div><div class="form-group"><label>性别</label><select class="form-select" id="empFormGender"><option value="男" ${emp.gender==='男'?'selected':''}>男</option><option value="女" ${emp.gender==='女'?'selected':''}>女</option></select></div></div><div class="form-row"><div class="form-group"><label>职位</label><input class="form-input" id="empFormJob" value="${emp.job||''}"></div><div class="form-group"><label>入职日期</label><input type="date" class="form-input" id="empFormEntry" value="${emp.entryDate||''}"></div></div><hr><h4>工作经历</h4><div id="empExprContainer">${exprHTML||'<div class="form-row expr-row"><div class="form-group"><label>开始日期</label><input type="date" class="form-input expr-begin"></div><div class="form-group"><label>结束日期</label><input type="date" class="form-input expr-end"></div><div class="form-group"><label>公司</label><input class="form-input expr-company"></div><div class="form-group"><label>职位</label><input class="form-input expr-job"></div></div>'}</div><button class="btn btn-outline btn-sm" type="button" onclick="addExprRow()">＋ 添加</button>`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="submitEmpUpdate()">保存修改</button>`);
+        } catch(e){showToast('获取失败','error');}
+    }
+    let avatarUploading=false;
+    async function uploadEmpAvatar(name){
+        const file=document.getElementById('empAvatarFile').files[0];if(!file)return;if(file.type!=='image/jpeg'&&file.type!=='image/png'){showToast('仅支持 JPG/PNG 格式','error');return;}
+        const MAX_AVATAR_SIZE = 10 * 1024 * 1024; // 2MB
+        if (file.size > MAX_AVATAR_SIZE) { showToast('头像文件不能超过 2MB', 'error'); return; }
+        avatarUploading=true;document.getElementById('empUploadStatus').textContent='上传中...';
+        const saveBtn=document.querySelector('#modalFooter .btn-primary');if(saveBtn){saveBtn.disabled=true;saveBtn.style.opacity='0.5';saveBtn.textContent='⏳ 上传中...';}
+        const fd=new FormData();fd.append('file',file);fd.append('name',name);
+        try{
+            const res=await fetch('/oss/upload',{method:'POST',headers:{'Authorization':'Bearer '+sessionStorage.getItem('token')},body:fd});
+            const url=await res.text();document.getElementById('empFormImage').value=url;document.getElementById('empEditAvatar').src=url;document.getElementById('empEditAvatar').style.display='';document.getElementById('empUploadStatus').textContent='✅ 成功';showToast('上传成功','success');
+        }catch(e){document.getElementById('empUploadStatus').textContent='❌ 失败';showToast('上传失败','error');}
+        avatarUploading=false;if(saveBtn){saveBtn.disabled=false;saveBtn.style.opacity='1';saveBtn.textContent='保存修改';}
+    }
+    async function submitEmpUpdate(){
+        if(avatarUploading){showToast('头像上传中，请稍候','error');return;}
+        const d={emp:{id:parseInt(document.getElementById('empEditId').value),name:document.getElementById('empFormName').value,gender:document.getElementById('empFormGender').value,job:document.getElementById('empFormJob').value,entryDate:document.getElementById('empFormEntry').value,image:document.getElementById('empFormImage').value,version:parseInt(document.getElementById('empEditVersion').value)||0},empExpr:collectExprData()};
+        try{await apiPut('/emps',d);showToast('修改成功','success');closeModal();loadEmpList();}catch(e){showToast('修改失败','error');}
+    }
+    async function deleteEmp(id){if(!confirm(`确定删除员工 ID:${id}?`))return;try{await apiDelete(`/emps?ids=${id}`);showToast('删除成功','success');loadEmpList();}catch(e){showToast('删除失败','error');}}
+
+    // ============ 离职管理 ============
+    function showResignModal(empId, empName) {
+        openModal(`🚪 办理离职 — ${empName}`,
+            `<input type="hidden" id="resignEmpId" value="${empId}">
+             <div class="form-group"><label class="form-label">离职日期</label><input type="date" class="form-input" id="resignDate" value="${new Date().toISOString().split('T')[0]}"></div>
+             <div class="form-group"><label class="form-label">离职原因</label><textarea class="form-input" id="resignReason" rows="3" placeholder="选填"></textarea></div>`,
+            `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-danger" onclick="submitResign()">确认离职</button>`);
+    }
+    async function submitResign() {
+        const empId = document.getElementById('resignEmpId').value;
+        const resignationDate = document.getElementById('resignDate').value;
+        const reason = document.getElementById('resignReason').value;
+        if (!resignationDate) { showToast('请选择离职日期', 'error'); return; }
+        try {
+            const res = await apiPost('/resignation/submit', { empId: parseInt(empId), resignationDate, reason });
+            if (res.code === 1) { showToast('离职办理成功', 'success'); closeModal(); loadEmpList(); }
+            else { showToast(res.msg || '操作失败', 'error'); }
+        } catch(e) { showToast('操作失败', 'error'); }
+    }
+
+    let resignPage = 1, resignPageSize = 10;
+    async function renderResignationPage(container) {
+        container.innerHTML = `<div class="page-header"><h1 class="page-title">🚪 离职记录</h1></div><div class="card"><div class="card-header"><span class="card-title">离职员工列表</span></div><div class="table-container"><table><thead><tr><th>ID</th><th>员工ID</th><th>姓名</th><th>手机号</th><th>离职前岗位</th><th>部门</th><th>入职日期</th><th>离职日期</th><th>原因</th></tr></thead><tbody id="resignTableBody"></tbody></table></div><div class="pagination" id="resignPagination"></div></div>`;
+        await loadResignationList();
+    }
+    async function loadResignationList() {
+        try {
+            const res = await apiGet(`/resignation/list?page=${resignPage}&pageSize=${resignPageSize}`);
+            const rows = res?.data?.rows || [], total = res?.data?.total || 0;
+            document.getElementById('resignTableBody').innerHTML = rows.length === 0 ? '<tr><td colspan="9" style="text-align:center;color:#94a3b8;">暂无离职记录</td></tr>' : rows.map(r => `<tr><td>${r.id}</td><td>${r.empId}</td><td><strong>${r.empName||'-'}</strong></td><td>${r.empPhone||'-'}</td><td>${r.empJob||'-'}</td><td>${r.deptName||'-'}</td><td>${r.entryDate||'-'}</td><td>${r.resignationDate||'-'}</td><td>${r.reason||'-'}</td></tr>`).join('');
+            renderPagination('resignPagination', total, resignPage, resignPageSize, (p) => { resignPage = p; loadResignationList(); });
+        } catch(e) { showToast('加载失败', 'error'); }
+    }
+
+    // ============ 操作日志 ============
+    let operLogPage = 1, operLogPageSize = 10;
+    function renderOperLogPage(container) {
+        container.innerHTML = `<div class="page-header"><h1 class="page-title">📋 操作日志</h1></div>
+        <div class="card">
+            <div class="card-header"><span class="card-title">操作记录</span>
+                <button class="btn btn-success" onclick="showOperLogExportModal()">📋 导出</button>
+            </div>
+            <div class="filter-bar" style="margin-bottom:16px;flex-wrap:wrap;">
+                <input type="text" class="search-input" id="logOperation" placeholder="操作描述" style="width:160px;">
+                <input type="number" class="search-input" id="logUserId" placeholder="操作人ID" style="width:110px;">
+                <input type="date" class="form-input" id="logStart" style="min-width:130px;width:auto;">
+                <input type="date" class="form-input" id="logEnd" style="min-width:130px;width:auto;">
+                <select class="filter-select" id="logResult" style="width:auto;"><option value="">全部结果</option><option value="成功">成功</option><option value="失败">失败</option></select>
+                <button class="btn btn-primary" onclick="searchOperLog()">🔍搜索</button>
+                <span style="font-size:12px;color:#94a3b8;">日志只读，不可修改或删除</span>
+            </div>
+            <div class="table-container"><table><thead><tr><th>ID</th><th>操作人</th><th>操作</th><th>请求方式</th><th>接口</th><th>IP</th><th>结果</th><th>时间</th></tr></thead><tbody id="operLogBody"></tbody></table></div>
+            <div class="pagination" id="operLogPagination"></div>
+        </div>`;
+        loadOperLogList();
+    }
+    async function loadOperLogList() {
+        const operation = document.getElementById('logOperation')?.value || '';
+        const userId = document.getElementById('logUserId')?.value || '';
+        const startTime = document.getElementById('logStart')?.value || '';
+        const endTime = document.getElementById('logEnd')?.value || '';
+        const result = document.getElementById('logResult')?.value || '';
+        let url = `/operation-log/list?page=${operLogPage}&pageSize=${operLogPageSize}`;
+        if (operation) url += `&operation=${encodeURIComponent(operation)}`;
+        if (userId) url += `&userId=${userId}`;
+        if (startTime) url += `&startTime=${startTime}`;
+        if (endTime) url += `&endTime=${endTime}`;
+        if (result) url += `&result=${encodeURIComponent(result)}`;
+        try {
+            const res = await apiGet(url);
+            const rows = res?.data?.rows || [], total = res?.data?.total || 0;
+            document.getElementById('operLogBody').innerHTML = rows.length === 0
+                ? '<tr><td colspan="8" style="text-align:center;color:#94a3b8;">暂无操作记录</td></tr>'
+                : rows.map(r => `<tr>
+                    <td>${r.id}</td><td>${r.username||'-'}(${r.userId||'-'})</td><td>${r.operation||'-'}</td>
+                    <td><span class="badge badge-primary">${r.method||'-'}</span></td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.url||''}">${r.url||'-'}</td>
+                    <td>${r.ip||'-'}</td>
+                    <td><span class="badge ${r.result==='成功'?'badge-success':'badge-warning'}">${r.result||'-'}</span></td>
+                    <td>${r.createTime||'-'}</td>
+                </tr>`).join('');
+            renderPagination('operLogPagination', total, operLogPage, operLogPageSize, (p) => { operLogPage = p; loadOperLogList(); });
+        } catch(e) { showToast('加载失败', 'error'); }
+    }
+    function searchOperLog() { operLogPage = 1; loadOperLogList(); }
+
+    // 导出操作日志（弹窗选条件）
+    function showOperLogExportModal() {
+        openModal('📋 导出操作日志', `
+            <div class="form-group"><label class="form-label">操作描述</label><input class="form-input" id="exportOperDesc" placeholder="如：新增员工"></div>
+            <div class="form-group"><label class="form-label">操作人ID</label><input type="number" class="form-input" id="exportOperUserId" placeholder="留空=全部"></div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">操作时间 从</label><input type="datetime-local" class="form-input" id="exportOperStart"></div>
+                <div class="form-group"><label class="form-label">操作时间 至</label><input type="datetime-local" class="form-input" id="exportOperEnd"></div>
+            </div>
+            <div class="form-group"><label class="form-label">操作结果</label><select class="form-select" id="exportOperResult"><option value="">全部</option><option value="成功">成功</option><option value="失败">失败</option></select></div>
+        `, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="doExportOperLog()">📥 导出 Excel</button>`);
+    }
+    async function doExportOperLog() {
+        const operation = document.getElementById('exportOperDesc')?.value || '';
+        const userId = document.getElementById('exportOperUserId')?.value || '';
+        const startTime = document.getElementById('exportOperStart')?.value || '';
+        const endTime = document.getElementById('exportOperEnd')?.value || '';
+        const result = document.getElementById('exportOperResult')?.value || '';
+        let url = '/operation-log/export?';
+        if (operation) url += 'operation=' + encodeURIComponent(operation) + '&';
+        if (userId) url += 'userId=' + userId + '&';
+        if (startTime) url += 'startTime=' + startTime + '&';
+        if (endTime) url += 'endTime=' + endTime + '&';
+        if (result) url += 'result=' + encodeURIComponent(result) + '&';
+        try {
+            const token = sessionStorage.getItem('token');
+            const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) { showToast('导出失败', 'error'); return; }
+            const blob = await res.blob();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = '操作日志导出.xlsx';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            closeModal();
+            showToast('导出成功', 'success');
+        } catch(e) { showToast('导出失败', 'error'); }
+    }
+
+    // ============ Excel 导入导出 ============
+    function downloadEmpTemplate() {
+        window.open('/emps/template', '_blank');
+    }
+
+    async function importEmpExcel(input) {
+        const file = input.files[0];
+        if (!file) return;
+        if (!confirm(`确认导入 ${file.name}？\n\n导入前请确保数据格式与模板一致。`)) { input.value = ''; return; }
+        const msg = document.getElementById('empExcelMsg');
+        msg.textContent = '⏳ 导入中...';
+        const fd = new FormData();
+        fd.append('file', file);
+        try {
+            const token = sessionStorage.getItem('token');
+            const res = await fetch('/emps/import', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: fd
+            });
+            const result = await res.json();
+            if (result.code === 1) {
+                const data = result.data;
+                msg.textContent = '✅ ' + (data ? (data.successRows + '条成功') : result.msg);
+                showToast('导入成功', 'success');
+                loadEmpList();
+            } else {
+                // 显示错误详情
+                msg.textContent = '❌ ' + (result.msg || '导入失败');
+                if (result.data && result.data.errors && result.data.errors.length > 0) {
+                    alert(result.msg + '\n\n' + result.data.errors.join('\n'));
+                }
+                showToast(result.msg || '导入失败', 'error');
+            }
+        } catch (e) {
+            msg.textContent = '❌ 导入失败';
+            showToast('导入失败', 'error');
+        }
+        input.value = '';
+    }
+
+    // ===== 导出弹窗 =====
+    async function showExportModal() {
+        // 加载部门下拉
+        let deptOpts = '<option value="">全部部门</option>';
+        try {
+            const deptRes = await apiGet('/depts');
+            (deptRes?.data || []).forEach(d => { deptOpts += `<option value="${d.name}">${d.name}</option>`; });
+        } catch(e) {}
+        openModal('📋 导出员工', `
+            <div class="form-group"><label class="form-label">部门</label><select class="form-select" id="exportDept">${deptOpts}</select></div>
+            <div class="form-group"><label class="form-label">在职状态</label><select class="form-select" id="exportStatus"><option value="">全部</option><option value="在职">在职</option><option value="离职">离职</option></select></div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">入职日期 从</label><input type="date" class="form-input" id="exportStart"></div>
+                <div class="form-group"><label class="form-label">入职日期 至</label><input type="date" class="form-input" id="exportEnd"></div>
+            </div>
+        `, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="doExportExcel()">📥 导出 Excel</button>`);
+    }
+
+    async function doExportExcel() {
+        const deptName = document.getElementById('exportDept')?.value || '';
+        const status = document.getElementById('exportStatus')?.value || '';
+        const startDate = document.getElementById('exportStart')?.value || '';
+        const endDate = document.getElementById('exportEnd')?.value || '';
+        let url = '/emps/export?';
+        if (deptName) url += 'deptName=' + encodeURIComponent(deptName) + '&';
+        if (status) url += 'status=' + encodeURIComponent(status) + '&';
+        if (startDate) url += 'startDate=' + startDate + '&';
+        if (endDate) url += 'endDate=' + endDate + '&';
+        try {
+            const token = sessionStorage.getItem('token');
+            const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) { showToast('导出失败', 'error'); return; }
+            const blob = await res.blob();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = '员工信息导出.xlsx';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            closeModal();
+            showToast('导出成功', 'success');
+        } catch (e) { showToast('导出失败', 'error'); }
+    }
+
+    // ============ 学员管理 ============
+    let studentPage=1,studentPageSize=10;
+    async function renderStudentPage(container) {
+        container.innerHTML = `<div class="page-header"><h1 class="page-title">🎓 学员管理</h1></div><div class="card"><div class="card-header"><span class="card-title">学员列表</span><div class="filter-bar"><input type="text" class="search-input" id="studentSearchName" placeholder="🔍搜索..."><select class="filter-select" id="studentSearchGender"><option value="">全部性别</option><option value="1">男</option><option value="2">女</option></select><select class="filter-select" id="studentSearchClazz"><option value="">全部班级</option></select><button class="btn btn-primary" onclick="searchStudent()">🔍搜索</button><button class="btn btn-success" onclick="showStudentAddModal()">＋ 新增</button></div></div><div class="table-container"><table><thead><tr><th>ID</th><th>姓名</th><th>性别</th><th>班级</th><th>电话</th><th>学历</th><th>操作</th></tr></thead><tbody id="studentTableBody"></tbody></table></div><div class="pagination" id="studentPagination"></div></div>`;
+        try{const r=await apiGet('/clazz/list');if(r?.data){const sel=document.getElementById('studentSearchClazz');r.data.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});}}catch(e){}
+        await loadStudentList();
+    }
+    async function loadStudentList(){
+        const name=document.getElementById('studentSearchName')?.value||'',gender=document.getElementById('studentSearchGender')?.value||'',clazzId=document.getElementById('studentSearchClazz')?.value||'';
+        try{
+            let url=`/student?page=${studentPage}&pagesize=${studentPageSize}`;if(name)url+=`&name=${encodeURIComponent(name)}`;if(gender)url+=`&gender=${gender}`;if(clazzId)url+=`&clazzId=${clazzId}`;
+            const res=await apiGet(url),records=res?.data?.records||[],total=res?.data?.total||0;
+            document.getElementById('studentTableBody').innerHTML=records.length===0?'<tr><td colspan="7" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>':records.map(s=>`<tr><td>${s.id}</td><td><strong>${s.name||'-'}</strong></td><td><span class="badge ${s.gender===1?'badge-primary':'badge-danger'}">${s.gender===1?'男':'女'}</span></td><td>${s.clazzName||'-'}</td><td>${s.phone||'-'}</td><td>${s.degree||'-'}</td><td class="actions"><button class="btn btn-warning btn-xs" onclick="showStudentEditModal(${s.id})">✏️编辑</button><button class="btn btn-danger btn-xs" onclick="deleteStudent(${s.id})">🗑删除</button></td></tr>`).join('');
+            renderPagination('studentPagination',total,studentPage,studentPageSize,(p)=>{studentPage=p;loadStudentList();});
+        }catch(e){showToast('加载失败','error');}
+    }
+    function searchStudent(){studentPage=1;loadStudentList();}
+    function showStudentAddModal(){let opts='<option value="">请选择班级</option>';clazzListCache.forEach(c=>opts+=`<option value="${c.id}">${c.name}</option>`);openModal('新增学员',`<div class="form-row"><div class="form-group"><label>姓名</label><input class="form-input" id="studentFormName"></div><div class="form-group"><label>性别</label><select class="form-select" id="studentFormGender"><option value="1">男</option><option value="2">女</option></select></div></div><div class="form-row"><div class="form-group"><label>班级</label><select class="form-select" id="studentFormClazzId">${opts}</select></div><div class="form-group"><label>电话</label><input class="form-input" id="studentFormPhone"></div></div><div class="form-group"><label>学历</label><input class="form-input" id="studentFormDegree" placeholder="如：本科"></div>`,`<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="submitStudentAdd()">确认新增</button>`);}
+    async function submitStudentAdd(){const d={name:document.getElementById('studentFormName').value,gender:parseInt(document.getElementById('studentFormGender').value),clazzId:parseInt(document.getElementById('studentFormClazzId').value)||null,phone:document.getElementById('studentFormPhone').value,degree:document.getElementById('studentFormDegree').value};if(!d.name){showToast('请输入姓名','error');return;}try{await apiPost('/student',d);showToast('新增成功','success');closeModal();loadStudentList();}catch(e){showToast('新增失败','error');}}
+    async function showStudentEditModal(id){try{const r=await apiGet(`/student/${id}`),s=r?.data;if(!s)return;let opts='<option value="">请选择班级</option>';clazzListCache.forEach(c=>opts+=`<option value="${c.id}" ${s.clazzId===c.id?'selected':''}>${c.name}</option>`);openModal('编辑学员',`<input type="hidden" id="studentEditId" value="${s.id}"><div class="form-row"><div class="form-group"><label>姓名</label><input class="form-input" id="studentFormName" value="${s.name||''}"></div><div class="form-group"><label>性别</label><select class="form-select" id="studentFormGender"><option value="1" ${s.gender===1?'selected':''}>男</option><option value="2" ${s.gender===2?'selected':''}>女</option></select></div></div><div class="form-row"><div class="form-group"><label>班级</label><select class="form-select" id="studentFormClazzId">${opts}</select></div><div class="form-group"><label>电话</label><input class="form-input" id="studentFormPhone" value="${s.phone||''}"></div></div><div class="form-group"><label>学历</label><input class="form-input" id="studentFormDegree" value="${s.degree||''}"></div>`,`<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="submitStudentUpdate()">保存修改</button>`);}catch(e){showToast('获取失败','error');}}
+    async function submitStudentUpdate(){const d={id:parseInt(document.getElementById('studentEditId').value),name:document.getElementById('studentFormName').value,gender:parseInt(document.getElementById('studentFormGender').value),clazzId:parseInt(document.getElementById('studentFormClazzId').value)||null,phone:document.getElementById('studentFormPhone').value,degree:document.getElementById('studentFormDegree').value};try{await apiPut('/student',d);showToast('修改成功','success');closeModal();loadStudentList();}catch(e){showToast('修改失败','error');}}
+    async function deleteStudent(id){if(!confirm(`确定删除学员 ID:${id}?`))return;try{await apiDelete(`/student?id=${id}`);showToast('删除成功','success');loadStudentList();}catch(e){showToast('删除失败','error');}}
+
+    // ============ Pagination ============
+    function renderPagination(cid,total,current,ps,cb){
+        const c=document.getElementById(cid);if(!c)return;const tp=Math.ceil(total/ps)||1;
+        let h=`<span class="pagination-info">共 ${total} 条，第 ${current}/${tp} 页</span><div class="pagination-btns">`;
+        h+=`<button class="page-btn" ${current<=1?'disabled':''} data-page="${current-1}">◀</button>`;
+        for(let i=1;i<=tp;i++){if(i===1||i===tp||(i>=current-2&&i<=current+2))h+=`<button class="page-btn ${i===current?'active':''}" data-page="${i}">${i}</button>`;else if(i===current-3||i===current+3)h+='<span style="padding:0 4px;">...</span>';}
+        h+=`<button class="page-btn" ${current>=tp?'disabled':''} data-page="${current+1}">▶</button></div>`;
+        c.innerHTML=h;c.querySelectorAll('.page-btn').forEach(b=>b.addEventListener('click',function(){const p=parseInt(this.dataset.page);if(p&&p!==current&&p>=1&&p<=tp)cb(p);}));
+    }
+
+    // ============ 通知公告 ============
+    let noticePage = 1, noticePageSize = 10;
+    function renderNoticePage(container) {
+        container.innerHTML = `<div class="page-header"><h1 class="page-title">📢 通知公告</h1><p class="page-subtitle">管理系统通知公告</p></div>
+        <div class="card"><div class="card-header"><span class="card-title">公告列表</span><button class="btn btn-success" onclick="showNoticeAddModal()">＋ 发布公告</button></div>
+        <div class="table-container"><table><thead><tr><th>ID</th><th>标题</th><th>发布人</th><th>置顶</th><th>发布时间</th><th>操作</th></tr></thead><tbody id="noticeTableBody"></tbody></table></div>
+        <div class="pagination" id="noticePagination"></div></div>`;
+        loadNoticeList();
+    }
+    async function loadNoticeList() {
+        try {
+            const res = await apiGet(`/notice/list?page=${noticePage}&pageSize=${noticePageSize}`);
+            const records = res?.rows || [], total = res?.total || 0;
+            document.getElementById('noticeTableBody').innerHTML = records.length === 0 ? '<tr><td colspan="6" style="text-align:center;color:#94a3b8;">暂无公告</td></tr>' : records.map(n => `<tr><td>${n.id}</td><td><strong>${escapeHtml(n.title||'')}</strong></td><td>${n.publisherName||'-'}</td><td><span class="badge ${n.isTop==1?'badge-warning':'badge-success'}">${n.isTop==1?'已置顶':'普通'}</span></td><td>${n.createTime||'-'}</td><td class="actions"><button class="btn btn-warning btn-xs" onclick="showNoticeEditModal(${n.id})">✏️编辑</button><button class="btn btn-danger btn-xs" onclick="deleteNotice(${n.id})">🗑删除</button></td></tr>`).join('');
+            renderPagination('noticePagination', total, noticePage, noticePageSize, (p) => { noticePage = p; loadNoticeList(); });
+        } catch(e) { showToast('加载公告失败', 'error'); }
+    }
+    function showNoticeAddModal() {
+        openModal('发布公告', `<div class="form-group"><label class="form-label">标题<span style="color:red;">*</span></label><input class="form-input" id="noticeFormTitle" maxlength="200"></div><div class="form-group"><label class="form-label">内容</label><textarea class="form-input" id="noticeFormContent" rows="6" style="resize:vertical;"></textarea></div><div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="noticeFormIsTop"> 置顶公告</label></div>`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="submitNoticeAdd()">确认发布</button>`);
+    }
+    async function submitNoticeAdd() {
+        const title = document.getElementById('noticeFormTitle').value.trim();
+        if (!title) { showToast('请输入公告标题', 'error'); return; }
+        const data = {
+            title: title,
+            content: document.getElementById('noticeFormContent').value,
+            isTop: document.getElementById('noticeFormIsTop').checked ? 1 : 0,
+            publisherId: parseInt(sessionStorage.getItem('userId')),
+            publisherName: sessionStorage.getItem('userName')
+        };
+        try { await apiPost('/notice', data); showToast('发布成功', 'success'); closeModal(); loadNoticeList(); } catch(e) { showToast('发布失败', 'error'); }
+    }
+    async function showNoticeEditModal(id) {
+        try {
+            const res = await apiGet(`/notice/list?page=1&pageSize=100`); const list = res?.rows || []; const n = list.find(x => x.id === id);
+            if (!n) return;
+            openModal('编辑公告', `<input type="hidden" id="noticeEditId" value="${n.id}"><div class="form-group"><label class="form-label">标题</label><input class="form-input" id="noticeFormTitle" value="${escapeHtml(n.title||'')}" maxlength="200"></div><div class="form-group"><label class="form-label">内容</label><textarea class="form-input" id="noticeFormContent" rows="6" style="resize:vertical;">${escapeHtml(n.content||'')}</textarea></div><div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="noticeFormIsTop" ${n.isTop==1?'checked':''}> 置顶公告</label></div>`, `<button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="submitNoticeUpdate()">保存修改</button>`);
+        } catch(e) { showToast('获取公告失败', 'error'); }
+    }
+    async function submitNoticeUpdate() {
+        const data = {
+            id: parseInt(document.getElementById('noticeEditId').value),
+            title: document.getElementById('noticeFormTitle').value.trim(),
+            content: document.getElementById('noticeFormContent').value,
+            isTop: document.getElementById('noticeFormIsTop').checked ? 1 : 0
+        };
+        if (!data.title) { showToast('公告标题不能为空', 'error'); return; }
+        try { await apiPut('/notice', data); showToast('修改成功', 'success'); closeModal(); loadNoticeList(); } catch(e) { showToast('修改失败', 'error'); }
+    }
+    async function deleteNotice(id) {
+        if (!confirm(`确定删除公告 ID:${id} 吗？`)) return;
+        try { const res = await apiDelete(`/notice?id=${id}`); if (res && res.code === 1) showToast('删除成功', 'success'); else showToast(res?.msg||'删除失败', 'error'); loadNoticeList(); } catch(e) { showToast('删除失败', 'error'); }
+    }
+    function escapeHtml(str) {
+        const div = document.createElement('div'); div.textContent = str || ''; return div.innerHTML;
+    }
+
+    // ============ 修改密码 ============
+    function showPasswordModal() {
+        document.getElementById('adminOldPassword').value = '';
+        document.getElementById('adminNewPassword').value = '';
+        document.getElementById('adminConfirmPassword').value = '';
+        document.getElementById('passwordModalOverlay').classList.add('active');
+    }
+    function closePasswordModal() { document.getElementById('passwordModalOverlay').classList.remove('active'); }
+    document.getElementById('passwordModalOverlay').addEventListener('click', function(e) { if (e.target === this) closePasswordModal(); });
+    async function submitPasswordChange() {
+        const oldPwd = document.getElementById('adminOldPassword').value;
+        const newPwd = document.getElementById('adminNewPassword').value;
+        const confirmPwd = document.getElementById('adminConfirmPassword').value;
+        if (!oldPwd) { showToast('请输入原密码', 'error'); return; }
+        if (!newPwd) { showToast('请输入新密码', 'error'); return; }
+        if (newPwd.length < 6) { showToast('新密码长度不能少于6位', 'error'); return; }
+        if (newPwd !== confirmPwd) { showToast('两次输入的新密码不一致', 'error'); return; }
+        try {
+            const res = await apiPut('/emps/password', { userId: parseInt(sessionStorage.getItem('userId')), oldPassword: oldPwd, newPassword: newPwd });
+            if (res && res.code === 1) { showToast('密码修改成功', 'success'); closePasswordModal(); } else { showToast(res?.msg || '修改失败', 'error'); }
+        } catch(e) { showToast('修改失败', 'error'); }
+    }
+
+    // ============ Init ============
+    loadUserName();
+    const savedPage = localStorage.getItem('currentPage') || 'dashboard';
+    renderPage(savedPage);
+    document.querySelectorAll('.nav-item').forEach(n => { n.classList.toggle('active', n.dataset.page === savedPage); });
+</script>
+</body>
+</html>

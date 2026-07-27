@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.tidaswebmanagement.mapper.EmpMapper">
+
+    <select id="getEmpsbyscan" resultType="org.example.tidaswebmanagement.pojo.Emp">
+        select e.*, d.name as deptName
+        from emp e
+        left join dept d on e.dept_id = d.id
+        <where>
+            <if test="name != null and name.trim() != ''">
+                e.name like concat('%', #{name}, '%')
+            </if>
+            <if test="gender != null and gender.trim() != ''">
+                AND e.gender = #{gender}
+            </if>
+            <if test="startDate != null and startDate.trim() != '' and endDate != null and endDate.trim() != ''">
+                AND e.entry_date between #{startDate} and #{endDate}
+            </if>
+            <if test="startDate != null and startDate.trim() != '' and (endDate == null or endDate.trim() == '')">
+                AND e.entry_date &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate.trim() != '' and (startDate == null or startDate.trim() == '')">
+                AND e.entry_date &lt;= #{endDate}
+            </if>
+        </where>
+        order by e.id
+    </select>
+
+    <!-- 员工基础信息动态更新 —— 使用 trim 替代 set 确保逗号处理正确 -->
+    <update id="updateEmp">
+        UPDATE emp
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name.trim() != ''">
+                name = #{name},
+            </if>
+            <if test="gender != null and gender.trim() != ''">
+                gender = #{gender},
+            </if>
+            <if test="phone != null and phone.trim() != ''">
+                phone = #{phone},
+            </if>
+            <if test="email != null and email.trim() != ''">
+                email = #{email},
+            </if>
+            <if test="job != null and job.trim() != ''">
+                job = #{job},
+            </if>
+            <if test="salary != null">
+                salary = #{salary},
+            </if>
+            <if test="image != null and image.trim() != ''">
+                image = #{image},
+            </if>
+            <if test="entryDate != null">
+                entry_date = #{entryDate},
+            </if>
+            <if test="deptId != null">
+                dept_id = #{deptId},
+            </if>
+            <if test="username != null and username.trim() != ''">
+                username = #{username},
+            </if>
+            update_time = #{updateTime},
+            version = COALESCE(version, 0) + 1,
+        </trim>
+        WHERE id = #{id}
+        <if test="version != null">
+            AND version = #{version}
+        </if>
+    </update>
+
+    <!-- 导出：条件分页查询 -->
+    <select id="listForExport" resultType="org.example.tidaswebmanagement.pojo.Emp">
+        SELECT e.*, d.name AS deptName
+        FROM emp e LEFT JOIN dept d ON e.dept_id = d.id
+        <where>
+            <if test="deptName != null and deptName.trim() != ''">
+                AND d.name = #{deptName}
+            </if>
+            <if test="status != null and status.trim() != ''">
+                AND e.status = #{status}
+            </if>
+            <if test="startDate != null and startDate.trim() != ''">
+                AND e.entry_date &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate.trim() != ''">
+                AND e.entry_date &lt;= #{endDate}
+            </if>
+        </where>
+        ORDER BY e.id
+        LIMIT #{offset}, #{size}
+    </select>
+
+</mapper>

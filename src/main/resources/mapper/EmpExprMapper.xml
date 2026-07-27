@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.tidaswebmanagement.mapper.EmpExprMapper">
+
+    <!-- 动态更新工作经历：只更新非null、非全空格字段 -->
+    <update id="updateEmpExpr">
+        UPDATE emp_expr
+        <set>
+            <if test="empId != null">
+                emp_id = #{empId},
+            </if>
+            <if test="begin != null">
+                begin = #{begin},
+            </if>
+            <if test="end != null">
+                end = #{end},
+            </if>
+            <if test="company != null and company.trim() != ''">
+                company = #{company},
+            </if>
+            <if test="job != null and job.trim() != ''">
+                job = #{job},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

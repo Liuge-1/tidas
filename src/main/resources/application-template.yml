@@ -1,0 +1,97 @@
+server:
+  port: 8080
+  address: 0.0.0.0
+  # Nginx 反向代理：正确获取客户端真实 IP 和协议
+  forward-headers-strategy: framework
+  # ===== Tomcat 线程池（仅非虚拟线程时生效，已开启虚拟线程故注释） =====
+  # tomcat:
+  #   threads:
+  #     max: 300
+  #     min-spare: 20
+  #   accept-count: 200
+  #   max-connections: 8192
+
+# jwt配置
+jwt:
+  # 生产环境通过环境变量 JWT_SECRET 覆盖，本地自行填写随机长字符串
+  secret: ${JWT_SECRET:自定义超长随机密钥，建议32位以上大小写数字符号组合}
+  expiration: 7200000  # 过期时间 2小时，单位毫秒
+  refresh-expiration: 604800000  # refreshToken 过期时间 7天，单位毫秒
+
+# jasypt 配置加密
+# 生产部署：通过环境变量 JASYPT_ENCRYPTOR_PASSWORD 传入加密盐值
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD:自定义加密盐值，本地与服务器保持一致}
+    # algorithm 默认 PBEWITHHMACSHA512ANDAES_256，无需显式配置
+
+#Spring 配置
+spring:
+  application:
+    name: tidas-web-management
+  # JDK21 虚拟线程：极大提升并发能力，需 SpringBoot 3.2+
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    # MySQL URL：生产环境通过环境变量覆盖
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/tidas?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&ssl-mode=DISABLED}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USERNAME:你的MySQL账号}
+    password: ${MYSQL_PASSWORD:使用Jasypt加密后的数据库密码ENC(xxx)}
+    hikari:
+      pool-name: TidasHikariPool
+      minimum-idle: 4
+      maximum-pool-size: 16
+      idle-timeout: 300000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+      leak-detection-threshold: 15000
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 1000MB
+  # QQ邮箱 SMTP（465 端口 SSL，国内云服务器不会拦截）
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: ${MAIL_USER:你的QQ邮箱地址}
+    password: ${MAIL_PASSWORD:使用Jasypt加密后的邮箱授权码ENC(xxx)}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+            trust: smtp.qq.com
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  configuration:
+    # 生产环境务必注释掉，避免大量SQL日志拖慢性能
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# 阿里云 OSS 配置
+aliyun:
+  oss:
+    endpoint: oss-cn-beijing.aliyuncs.com
+    bucket-name: ${OSS_BUCKET:你的OSS存储桶名称}
+    access-key-id: ${OSS_AK:阿里云AccessKeyID}
+    access-key-secret: ${OSS_SK:使用Jasypt加密后的AccessKeySecret ENC(xxx)}
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    org.springframework.transaction: INFO
+    org.example.tidaswebmanagement: INFO
+    # MyBatis SQL 日志：调试时放开，生产必须注释
+#    org.example.tidaswebmanagement.mapper: DEBUG
