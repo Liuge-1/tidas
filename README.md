@@ -1,5 +1,5 @@
 # TIDAS培训管理系统
-基于 SpringBoot4.0 + MyBatis + Redis + WebSocket 的员工培训管理后台系统
+基于 SpringBoote3.4 + MySQL8.0 + MyBatis  + WebSocket 的员工培训管理后台系统
 
 ## 在线访问地址
 http://tidas.pengdev.online
@@ -31,4 +31,4 @@ http://www.tidas.pengdev.online
 ### 2. 本地启动步骤
 1. 克隆项目到本地
 ```powershell
-git clone https://github.com/Liuge-1/liu.git
+git clone https://github.com/Liuge-1/tidas.git
