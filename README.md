@@ -7,7 +7,7 @@ http://tidas.pengdev.online
 http://www.tidas.pengdev.online
 
 ## 技术栈
-- 后端：Spring Boot 4.0、MyBatis、MyBatis-Plus、JWT、Redis、WebSocket
+- 后端：Spring Boot 4.0、MyBatis、MyBatis-Plus、JWT、WebSocket
 - 工具：Jasypt 配置加密、Excel导入导出、阿里云OSS文件存储
 - 数据库：MySQL8.0
 - 前端：原生HTML+JS
